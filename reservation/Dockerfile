@@ -15,4 +15,5 @@ RUN pip install -U pip
 RUN pip install -r /reservation/requirements.txt
 WORKDIR /reservation/reservation
 RUN python ./manage.py migrate
+RUN python ./manage.py create_data
 CMD python ./manage.py runserver 0:8082
