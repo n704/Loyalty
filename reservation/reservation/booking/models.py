@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import models
+from django.db import transaction
 
 # Create your models here.
 class Room(models.Model):
@@ -25,13 +26,15 @@ class BookingManager(models.Manager):
         """
         """
         try:
-            booking = Booking()
-            booking.user = user
-            booking.room = room
-            booking.status = status
-            room.reduce_available_amount()
-            user.reduce_bonus_points()
-            booking.save()
+            with transaction.atomic():
+                booking = Booking()
+                booking.user = user
+                booking.room = room
+                booking.status = status
+                room.reduce_available_amount()
+                user.reduce_bonus_points(room.required_points)
+                booking.save()
+                return True, "Sucess"
         except Exception as e:
             return False, "Failed"
 
@@ -69,10 +72,23 @@ class BookingUser(models.Model):
     name = models.CharField(max_length=255, null=False)
     bonus_point = models.IntegerField(default=0)
 
-    def reduce_bonus_points(self):
-        if self.bonus_point > 0:
-            self.bonus_point -= 1
-            self.save()
+    def reduce_bonus_points(self, value):
+        import os, requests
+        SCORE_HOST = os.environ.get('SCORE_HOST')
+        SCORE_URI = os.environ.get('SCORE_URI')
+        SCORE_PORT = os.environ.get('SCORE_PORT')
+        url = 'http://{0}:{1}{2}'.format(SCORE_HOST,SCORE_PORT,SCORE_URI)
+        SCORE_API_KEY = os.environ.get('SCORE_API_KEY')
+        headers = {
+            'SCORE_KEY': SCORE_API_KEY
+        }
+        try:
+            res = requests.post(url, {"user_id": self.pk, "value": value}, headers=headers)
+            status = res.status_code
+        except Exception as e:
+            status = 400
+        if status != 200:
+            raise Exception("Failed")
 
 
 

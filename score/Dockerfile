@@ -9,6 +9,7 @@ RUN mkdir /score
 COPY . /score
 WORKDIR /score/score
 RUN npm install
+RUN npm install sqlite3
 # If you are building your code for production
 # RUN npm install --only=production
 

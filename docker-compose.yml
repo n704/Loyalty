@@ -2,11 +2,20 @@ version: '3'  # version of compose format
 
 services:
   reservation:
+    env_file:
+      - ./reservation/reservation.env
     build: ./reservation
     volumes:
       - ./db.sqlite3:/db.sqlite3
       - ./reservation:/reservation
     ports:
       - 8082:8082
+    links:
+      - "score"
   score:
     build: ./score
+    volumes:
+      - ./db.sqlite3:/db.sqlite3
+      # - ./score:/score
+    env_file:
+      - ./score/score.env
