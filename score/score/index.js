@@ -18,29 +18,42 @@ app.post('/reduce_bonus_points', (req, res) => {
     let db = new sqlite3.Database('/db.sqlite3', (err) => {
       if (err) {
         console.error(err.message);
+        res.status(400)
+        res.end()
       }
       var { user_id , value } = req.body
       var sql_get = 'SELECT * from booking_bookinguser where id = ?'
       db.get(sql_get, [ user_id], ( err, row) => {
+        console.log("Updated")
         if (err) {
           console.error(err)
+          res.status(400)
+          res.end()
         }
         let new_value = row.bonus_point - value
-        console.log(new_value, row.bonus_point, value)
-        var sql = `UPDATE booking_bookinguser SET bonus_point = ? where id= ?`
-        db.run(sql,[ new_value, user_id], err => {
-          if (err) {
-            console.error(err.message);
-          }
-          console.log("Updated")
-          db.close()
+        if (new_value >= 0) {
+          var sql = `UPDATE booking_bookinguser SET bonus_point = ? where id= ?`
+          db.run(sql,[ new_value, user_id], err => {
+            console.log("Updated")
+            if (err) {
+              console.error(err.message);
+              res.status(400)
+              res.end()
+            }
+            console.log("Updated")
+            db.close()
+            res.end()
+          })
+        } else {
+          res.status(400)
           res.end()
-        })
+        }
       })
     });
   } else {
     console.log("Nort ssame")
     res.status(400)
+    res.end()
   }
 
 })

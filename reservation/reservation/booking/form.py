@@ -5,10 +5,8 @@ class RoomForm(forms.Form):
     user_id = forms.IntegerField()
 
     def clean_room_id(self):
-        import sys
         from booking.models import *
         room_id = self.cleaned_data['room_id']
-        print >>sys.stderr, room_id
         try:
             room = Room.objects.get(pk=room_id)
             self.cleaned_data['room'] = room
@@ -19,7 +17,6 @@ class RoomForm(forms.Form):
     def clean_user_id(self):
         from booking.models import *
         user_id = self.cleaned_data['user_id']
-        print user_id
         try:
             user = BookingUser.objects.get(pk=user_id)
             self.cleaned_data['user'] = user

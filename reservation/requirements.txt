@@ -20,3 +20,4 @@ requests==2.20.1
 six==1.11.0
 urllib3==1.24.1
 vine==1.1.4
+mock==2.0.0

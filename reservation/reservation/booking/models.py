@@ -17,6 +17,8 @@ class Room(models.Model):
         if self.available_amount > 0:
             self.available_amount -= 1
             self.save()
+        else:
+            raise Exception("No Room available.")
 
 class BookingManager(models.Manager):
     """
@@ -34,35 +36,21 @@ class BookingManager(models.Manager):
                 room.reduce_available_amount()
                 user.reduce_bonus_points(room.required_points)
                 booking.save()
-                return True, "Sucess"
+                return True, "Success"
         except Exception as e:
-            return False, "Failed"
+            return False, str(e)
 
 
 
     def get_status(self, user, room):
         """
         """
-        if user.bonus_point > room.required_points:
+        if user.bonus_point >= room.required_points and room.available_amount:
             status = Booking.RESERVED
         else:
             status = Booking.PENDING_APPROVAL
         return status
 
-
-    def validate(self, data):
-        """
-        """
-        room_id = data.get("room_id",'')
-        try:
-            room = Room.objects.get(pk=room_id)
-        except Room.DoesNotExist:
-            return False, "Room does not exist"
-        user_id = data.get("user_id", '')
-        try:
-            user = BookingUser.objects.get(pk=user_id)
-        except BookingUser.DoesNotExist:
-            return False, "User does not exist"
 
 
 class BookingUser(models.Model):

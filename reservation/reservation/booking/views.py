@@ -7,30 +7,6 @@ from django.http import JsonResponse
 # Create your views here.
 class BookRoomView(View):
 
-    def get(self, request, *args, **kwargs):
-        """
-        """
-        from booking.models import *
-        rooms = Room.objects.count()
-        import os, sys, requests
-        print >>sys.stderr, os.environ
-        SCORE_HOST = os.environ.get('SCORE_HOST')
-        SCORE_URI = os.environ.get('SCORE_URI')
-        SCORE_PORT = os.environ.get('SCORE_PORT')
-        url = 'http://{0}:{1}{2}'.format(SCORE_HOST,SCORE_PORT,SCORE_URI)
-        SCORE_API_KEY = os.environ.get('SCORE_API_KEY')
-        headers = {
-            'SCORE_KEY': SCORE_API_KEY
-        }
-        print >>sys.stderr, url
-        try:
-            res = requests.post(url, {"user_id": 1, "value": 1}, headers=headers)
-            status = res.status_code
-        except Exception as e:
-            status = 400
-        user = BookingUser.objects.get(pk=1)
-        print >>sys.stderr, user.bonus_point
-        return JsonResponse({'room': rooms}, status=status)
 
     def post(self, request, *args, **kwargs):
         """
@@ -51,8 +27,7 @@ class BookRoomView(View):
                     'status': status
                 }})
             else:
-                return JsonResponse({'error': 'Failed'}, status=400)
+                return JsonResponse({'error': message}, status=400)
         else:
-            print >>sys.stderr, booking_data.errors
-            return JsonResponse({'error': dict(booking_data.errors.items())})
-        return JsonResponse({'room': '1'})
+            return JsonResponse({'error': dict(booking_data.errors.items())}, status=400)
+        return JsonResponse({'room': room.pk})
